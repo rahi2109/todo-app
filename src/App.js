@@ -4,18 +4,35 @@ import './App.css';
 import {Button,FormControl,InputLabel,Input} from '@material-ui/core'
 import Todo from'./Todo'
 import db from './firebase'
+import firebase from 'firebase';
 
 function App() {
   const [todos,setTodos]=React.useState([]);
   const[input,setInput]=React.useState('');
   const addTodo=(event)=>{
     event.preventDefault();
-    setTodos([...todos,input]);
+    console.log("debug" ,input);
+    db.collection('todos').add({
+      todo:input,
+      timeStamp:firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // setTodos([...todos,input]);
     setInput('');
+
+
+
+
   }
   useEffect(()=>{
-      // db.collection('todos')
+    console.log("Debug ",db.collection('todos'));
+      db.collection('todos').orderBy('timeStamp','desc').onSnapshot(snapshot=>{
+        console.log("Debug ")
+        setTodos(snapshot.docs.map(doc=> ({id:doc.id,todo:doc.data().todo})))
+      })
   },[])
+
+
   return (
     <div className="App">
       <h1>Hello Anshuman</h1>
@@ -36,7 +53,7 @@ function App() {
       
       <ul>
       {todos.map(todo=>(
-        <Todo text={todo} />
+        <Todo todo={todo} />
       ))}
 
       </ul>
